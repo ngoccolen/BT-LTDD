@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "821073176056",
+    "firebase_url": "https://lab7-c630c-default-rtdb.firebaseio.com",
+    "project_id": "lab7-c630c",
+    "storage_bucket": "lab7-c630c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:821073176056:android:4223a826bacfc960b4e20d",
+        "android_client_info": {
+          "package_name": "com.example.lab7"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhdiXlkt1H24Hgt0KIQZVi49tZZlra7gc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:821073176056:android:7b11930d06bce998b4e20d",
+        "android_client_info": {
+          "package_name": "com.example.lab71"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhdiXlkt1H24Hgt0KIQZVi49tZZlra7gc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
