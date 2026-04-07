@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "295726212594",
+    "project_id": "ktragki",
+    "storage_bucket": "ktragki.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:295726212594:android:16cc33a0830c50fdd1776b",
+        "android_client_info": {
+          "package_name": "com.example.labgki"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQc73Iy2DrRsxciO-Uzh6H0h1JmvA2Hg0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
