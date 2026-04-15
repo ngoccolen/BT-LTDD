@@ -16,6 +16,9 @@ fun AppNavigation() {
     val navController = rememberNavController()
     var currentUser by remember { mutableStateOf<UserModel?>(null) }
 
+    // Thêm biến này để lưu thông tin người dùng mà Admin chọn để sửa
+    var userToEditByAdmin by remember { mutableStateOf<UserModel?>(null) }
+
     NavHost(navController = navController, startDestination = "login") {
 
         composable("login") {
@@ -40,7 +43,12 @@ fun AppNavigation() {
                     navController.navigate("login") { popUpTo(0) }
                 },
                 onNavigateToAddUser = { navController.navigate("add_user") },
-                onNavigateToEditProfile = { navController.navigate("edit_profile") }
+                onNavigateToEditProfile = { navController.navigate("edit_profile") },
+                onNavigateToAdminEdit = { selectedUser ->
+                    // Khi admin chọn 1 user để sửa, lưu user đó lại và chuyển trang
+                    userToEditByAdmin = selectedUser
+                    navController.navigate("admin_edit_user")
+                }
             )
         }
 
@@ -59,6 +67,14 @@ fun AppNavigation() {
                 }
             )
         }
+
+        // Thêm màn hình AdminEditUserScreen vào biểu đồ điều hướng
+        composable("admin_edit_user") {
+            AdminEditUserScreen(
+                userToEdit = userToEditByAdmin,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }
 
@@ -67,7 +83,8 @@ fun HomeScreen(
     currentUser: UserModel?,
     onLogout: () -> Unit,
     onNavigateToAddUser: () -> Unit,
-    onNavigateToEditProfile: () -> Unit
+    onNavigateToEditProfile: () -> Unit,
+    onNavigateToAdminEdit: (UserModel) -> Unit // Thêm tham số này
 ) {
     val isAdmin = currentUser?.role?.lowercase() == "admin"
 
@@ -94,7 +111,13 @@ fun HomeScreen(
         Box(modifier = Modifier.weight(1f)) {
             UserList(
                 currentUser = currentUser,
-                onEditClick = { onNavigateToEditProfile() }
+                onEditClick = { selectedUser ->
+                    if (isAdmin && selectedUser.username != currentUser?.username) {
+                        onNavigateToAdminEdit(selectedUser)
+                    } else {
+                        onNavigateToEditProfile()
+                    }
+                }
             )
         }
     }

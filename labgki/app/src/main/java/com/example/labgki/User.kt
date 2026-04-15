@@ -30,7 +30,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 //Hiển thị danh sách tất cả người dùng
 @Composable
-fun UserList(currentUser: UserModel?, onEditClick: () -> Unit) {
+fun UserList(
+    currentUser: UserModel?,
+    onEditClick: (UserModel) -> Unit // 1. Đổi tham số để truyền được user đang chọn ra ngoài
+) {
     var userList by remember { mutableStateOf(listOf<UserModel>()) }
     var searchQuery by remember { mutableStateOf("") } // Biến lưu từ khóa tìm kiếm
     val db = FirebaseFirestore.getInstance()
@@ -107,9 +110,10 @@ fun UserList(currentUser: UserModel?, onEditClick: () -> Unit) {
                         }
 
                         Row {
-                            if (isMe) {
+                            // 2. Cho phép Admin sửa người khác (hoặc tự sửa chính mình)
+                            if (isMe || isAdmin) {
                                 IconButton(
-                                    onClick = onEditClick,
+                                    onClick = { onEditClick(user) }, // 3. Truyền user được chọn vào hàm
                                     colors = IconButtonDefaults.iconButtonColors(containerColor = PrimaryPastel.copy(alpha = 0.1f)),
                                     modifier = Modifier.padding(end = 8.dp)
                                 ) {

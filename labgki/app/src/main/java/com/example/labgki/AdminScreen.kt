@@ -414,3 +414,170 @@ fun uploadToCloudinary(
         }
     })
 }
+
+// Giao diện để Admin chỉnh sửa thông tin người dùng
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdminEditUserScreen(userToEdit: UserModel?, onBack: () -> Unit) {
+    if (userToEdit == null)
+        return
+
+    var password by remember { mutableStateOf(userToEdit.password) }
+    var role by remember { mutableStateOf(userToEdit.role) }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf("") }
+    val db = FirebaseFirestore.getInstance()
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? -> imageUri = uri }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Sửa Người Dùng", fontWeight = FontWeight.Bold, color = TextDark) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundPastel),
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(painterResource(id = android.R.drawable.ic_menu_revert),
+                            contentDescription = "Back", tint = TextDark)
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Box(modifier = Modifier.fillMaxSize().background(BackgroundPastel).padding(padding),
+            contentAlignment = Alignment.TopCenter)
+        {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                elevation = CardDefaults.cardElevation(2.dp)
+            )
+            {
+                Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally)
+                {
+                    Box(contentAlignment = Alignment.Center,
+                        modifier = Modifier.padding(bottom = 24.dp))
+                    {
+                        if (imageUri != null) {
+                            AsyncImage(model = imageUri,
+                                contentDescription = null,
+                                modifier = Modifier.size(110.dp).clip(CircleShape).border(3.dp,
+                                    PrimaryPastel, CircleShape))
+                        } else if (userToEdit.file.isNotEmpty()) {
+                            AsyncImage(model = userToEdit.file,
+                                contentDescription = null,
+                                modifier = Modifier.size(110.dp).clip(CircleShape).border(3.dp,
+                                    PrimaryPastel, CircleShape))
+                        } else {
+                            Box(modifier = Modifier.size(110.dp).clip(CircleShape).background(BackgroundPastel).border(3.dp,
+                                LightBorder, CircleShape),
+                                contentAlignment = Alignment.Center) {
+                                Text("Ảnh", color = TextDark)
+                            }
+                        }
+                        IconButton(onClick = {
+                            launcher.launch("image/*") },
+                            modifier = Modifier.size(36.dp).align(Alignment.BottomEnd),
+                            colors = IconButtonDefaults.iconButtonColors(containerColor = PrimaryPastel)) {
+                            Icon(painterResource(id = android.R.drawable.ic_menu_camera),
+                                contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = userToEdit.username,
+                        onValueChange = { },
+                        label = { Text("Username") },
+                        enabled = false,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = Color.Gray,
+                            disabledBorderColor = LightBorder,
+                            disabledLabelColor = Color.Gray
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryPastel,
+                            unfocusedBorderColor = LightBorder,
+                            focusedTextColor = TextDark,
+                            unfocusedTextColor = TextDark
+                        )
+                    )
+
+                    OutlinedTextField(
+                        value = role,
+                        onValueChange = { role = it },
+                        label = { Text("Role (admin/user)") },
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
+                        singleLine = true,
+                        shape = RoundedCornerShape(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryPastel,
+                            unfocusedBorderColor = LightBorder,
+                            focusedTextColor = TextDark,
+                            unfocusedTextColor = TextDark
+                        )
+                    )
+
+                    Button(
+                        onClick = {
+                            if (password.isBlank() || role.isBlank()) {
+                                message = "Thông tin không được để trống!"
+                                return@Button
+                            }
+                            isLoading = true
+
+                            if (imageUri != null) {
+                                uploadToCloudinary(
+                                    context = context,
+                                    imageUri = imageUri!!,
+                                    cloudName = "dp7tq1zns",
+                                    uploadPreset = "dp7tq1zns",
+                                    onSuccess = { uploadedUrl ->
+                                        val updatedUser = UserModel(userToEdit.username, password, role, uploadedUrl)
+                                        db.collection("users").document(userToEdit.username).set(updatedUser).addOnSuccessListener {
+                                            isLoading = false
+                                            onBack()
+                                        }
+                                    },
+                                    onError = { error ->
+                                        isLoading = false; message = error
+                                    }
+                                )
+                            } else {
+                                val updatedUser = UserModel(userToEdit.username, password, role, userToEdit.file)
+                                db.collection("users").document(userToEdit.username).set(updatedUser).addOnSuccessListener {
+                                    isLoading = false
+                                    onBack()
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(55.dp),
+                        shape = RoundedCornerShape(25.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryPastel),
+                        enabled = !isLoading
+                    ) {
+                        if (isLoading)
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                        else
+                            Text("CẬP NHẬT NGƯỜI DÙNG", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                    if (message.isNotEmpty())
+                        Text(message, color = Color.Red, modifier = Modifier.padding(top = 12.dp))
+                }
+            }
+        }
+    }
+}
